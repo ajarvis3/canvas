@@ -4,12 +4,6 @@
     border-width: 3px;
 }
 
-.color-square {
-    display: inline-block;
-    margin: auto 5px;
-    width: 10px;
-    height: 10px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: black;
+.color-chooser {
+    margin: 5px;
 }

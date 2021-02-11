@@ -5,19 +5,17 @@ import "./Canvas.css";
 function ColorChooser(props) {
     const {color, setColor} = props;
 
-    const style = {
-        backgroundColor: color
-    }
-
     function handleChange(event) {
         setColor(event.target.value);
     }
 
     return (
         <div>
-            <span>Enter a Color:</span>
-            <input type="text" value={color} onChange={handleChange} />
-            <span className="color-square" style={style}></span>
+            <input 
+                className="color-chooser"
+                type="color" 
+                value={color} 
+                onChange={handleChange} />
         </div>
     )
 }
