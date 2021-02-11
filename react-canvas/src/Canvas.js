@@ -4,6 +4,10 @@ import {updatePath} from './Utils/UpdateUtils';
 import LayersDisplay from "./LayersDisplay";
 import "./Canvas.css";
 
+/**
+ * Control for adding a layer
+ * @param {*} props 
+ */
 function AddLayer(props) {
     const {paths, setPaths, setActive} = props;
 
@@ -12,7 +16,7 @@ function AddLayer(props) {
         newPaths.push([]);
         setActive(newPaths.length - 1);
         setPaths(newPaths);
-    }, [paths, setPaths]);
+    }, [paths, setPaths, setActive]);
 
     return (
         <button onClick={handleChange}>
@@ -21,6 +25,10 @@ function AddLayer(props) {
     )
 }
 
+/**
+ * Used to select brush size
+ * @param {*} props 
+ */
 function BrushSizer(props) {
     const {brushSize, setBrushSize} = props;
 
@@ -66,6 +74,10 @@ function Download(props) {
     )
 }
 
+/**
+ * Used to choose brush color
+ * @param {*} props 
+ */
 function ColorChooser(props) {
     const {color, setColor} = props;
 
@@ -82,14 +94,16 @@ function ColorChooser(props) {
     )
 }
 
+/**
+ * A single layer
+ * @param {*} props 
+ */
 function Layer(props) {
     const {width, height, color, brushSize, paths, setPaths, index, active} = props;
     const canvas = useRef();
-    // const [paths, setPaths] = useState([]);
 
     // Path format [type, color, size, start, [points]]
-    function handleMouseDown(event) {
-        console.log(index);
+    const handleMouseDown = useCallback((event) => {
         if (event.buttons & 1) {
             const newPaths = paths.slice();
             newPaths[index].push(["path",
@@ -98,13 +112,13 @@ function Layer(props) {
                 event.nativeEvent.offsetY / height]]);
             setPaths(newPaths);    
         }
-    }
+    }, [paths, color, brushSize, width, height, setPaths, index]);
 
-    function handleMouseMove(event) {
+    const handleMouseMove = useCallback((event) => {
         if (event.buttons & 1) {
             updatePath(event, width, height, paths, setPaths, index);
         }
-    }
+    }, [width, height, paths, setPaths, index]);
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
@@ -143,6 +157,7 @@ function Canvas(props) {
             index={index}
             key={index} />
     });
+    // bit hacky, but it works now
     layers.push(layers.splice(active, 1));
 
     return (

@@ -1,4 +1,4 @@
-import {useRef, useEffect} from 'react';
+import {useRef, useEffect, useCallback} from 'react';
 import {drawLayer} from "./Utils/DrawingUtils";
 import "./LayersDisplay.css"
 
@@ -10,9 +10,9 @@ function MiniLayers(props) {
     const {width, height, paths, index, active, setActive} = props;
     const canvas = useRef();
 
-    function handleClick() {
+    const handleClick = useCallback(() => {
         setActive(index);
-    }
+    }, [setActive, index]);
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
@@ -43,7 +43,8 @@ function LayersDisplay(props) {
                     paths={paths}
                     active={active===index}
                     setActive={setActive}
-                    index={index} />
+                    index={index} 
+                    key={index} />
     });
 
     return (
