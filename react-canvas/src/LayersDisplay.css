@@ -1,0 +1,15 @@
+.mini-layer {
+    border-style: solid;
+    border-color: silver;
+    border-width: 3px;
+}
+
+.mini-layer.active {
+    border-color: blue;
+}
+
+.mini-layers-display {
+    display: flex;
+    flex-direction: column;
+    margin: 40px;
+}

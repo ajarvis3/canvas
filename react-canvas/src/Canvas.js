@@ -1,14 +1,16 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import { drawLayer } from './Utils/DrawingUtils';
 import {updatePath} from './Utils/UpdateUtils';
+import LayersDisplay from "./LayersDisplay";
 import "./Canvas.css";
 
 function AddLayer(props) {
-    const {paths, setPaths} = props;
+    const {paths, setPaths, setActive} = props;
 
     const handleChange = useCallback(() => {
         const newPaths = paths.slice();
         newPaths.push([]);
+        setActive(newPaths.length - 1);
         setPaths(newPaths);
     }, [paths, setPaths]);
 
@@ -46,7 +48,6 @@ function Download(props) {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    console.log(canvas, ctx);
     paths.forEach((layer) => {
         drawLayer(ctx, layer, width, height);
     })
@@ -82,7 +83,7 @@ function ColorChooser(props) {
 }
 
 function Layer(props) {
-    const {width, height, color, brushSize, paths, setPaths, index} = props;
+    const {width, height, color, brushSize, paths, setPaths, index, active} = props;
     const canvas = useRef();
     // const [paths, setPaths] = useState([]);
 
@@ -111,8 +112,8 @@ function Layer(props) {
     }, [paths, width, height, canvas, index]);
 
     return (
-        <canvas className='canvas'
-            z-index={index}
+        <canvas className='layer'
+            z-index={!active ? index : paths.length}
             ref={canvas}
             width={width}
             height={height}
@@ -128,9 +129,11 @@ function Canvas(props) {
     const [color, setColor] = useState('#000000');
     const [brushSize, setBrushSize] = useState(5);
     const [paths, setPaths] = useState([]);
+    const [active, setActive] = useState();
 
     const layers = paths.map((value, index) => {
         return <Layer
+            active={active===index}
             width={width}
             height={height}
             brushSize={brushSize}
@@ -139,25 +142,31 @@ function Canvas(props) {
             setPaths={setPaths}
             index={index}
             key={index} />
-    })
+    });
+    layers.push(layers.splice(active, 1));
 
     return (
-        <div>
-            <div>
-                <AddLayer paths={paths} setPaths={setPaths} />
-                <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
-                <ColorChooser color={color} setColor={setColor} />
-                <Download paths={paths} width={width} height={height}/>
+        <div className="canvas">
+            <div className="canvas-container">
+                <div className="canvas-control">
+                    <AddLayer 
+                        paths={paths} 
+                        setPaths={setPaths}
+                        setActive={setActive} />
+                    <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
+                    <ColorChooser color={color} setColor={setColor} />
+                    <Download paths={paths} width={width} height={height}/>
+                </div>
+                <div id="layer-container" width={width * 1.25} height={height * 1.25}>
+                    {layers}
+                </div>
             </div>
-            <div id="layer-container" width={width * 1.25} height={height * 1.25}>
-                {layers}
-            </div>
-            {/* <Layer 
-                width={width} 
-                height={height} 
-                brushSize={brushSize}
-                color={color} 
-                canvas={canvas}/> */}
+            <LayersDisplay 
+                paths={paths} 
+                width={width / 10} 
+                height={height / 10}
+                active={active}
+                setActive={setActive} />
         </div>
     )
 }
