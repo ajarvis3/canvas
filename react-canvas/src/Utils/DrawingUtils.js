@@ -13,3 +13,22 @@ export function drawPath(ctx, width, height, path) {
     }
     ctx.stroke();
 }
+
+/**
+ * Draws all paths of a given layer
+ * @param {*} ctx 
+ * @param {*} paths 
+ * @param {*} width 
+ * @param {*} height 
+ */
+export function drawLayer(ctx, paths, width, height) {
+    paths.forEach((value) => {
+        switch (value[0]) {
+            case("path"):
+                drawPath(ctx, width, height, value);
+                break;
+            default:
+                console.error("undefined thingy");
+        }
+    });
+}

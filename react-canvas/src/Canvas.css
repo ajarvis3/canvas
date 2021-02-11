@@ -1,9 +1,17 @@
 .canvas {
+    position: absolute;
     border-style: solid;
     border-color: silver;
     border-width: 3px;
+    left: 0;
+    right: 0;
+    margin: auto;
 }
 
 .color-chooser {
     margin: 5px;
+}
+
+.layer-container {
+    position: relative;
 }

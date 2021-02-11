@@ -1,7 +1,23 @@
-import {useEffect, useRef, useState} from 'react';
-import {drawPath} from './Utils/DrawingUtils';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import { drawLayer } from './Utils/DrawingUtils';
 import {updatePath} from './Utils/UpdateUtils';
 import "./Canvas.css";
+
+function AddLayer(props) {
+    const {paths, setPaths} = props;
+
+    const handleChange = useCallback(() => {
+        const newPaths = paths.slice();
+        newPaths.push([]);
+        setPaths(newPaths);
+    }, [paths, setPaths]);
+
+    return (
+        <button onClick={handleChange}>
+            Add Layer
+        </button>
+    )
+}
 
 function BrushSizer(props) {
     const {brushSize, setBrushSize} = props;
@@ -13,22 +29,35 @@ function BrushSizer(props) {
     return (
         <span>
             <label>Brush Size:</label>
-            <input type="number" value={brushSize}  onChange={handleChange}/>
+            <input type="number" value={brushSize} onChange={handleChange}/>
         </span> 
     )
 }
 
+/**
+ * Flattens and downloads image
+ * @param {*} props 
+ */
 function Download(props) {
-    const {canvas} = props;
+    const {paths, width, height} = props;
     const aTag = useRef();
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    console.log(canvas, ctx);
+    paths.forEach((layer) => {
+        drawLayer(ctx, layer, width, height);
+    })
 
     function onClick() {
-        const img = canvas.current.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        const img = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
         aTag.current.setAttribute("href", img);
     }
 
     return (
-        <a ref={aTag} download="canvas.png">
+        <a ref={aTag} href="/#" download="canvas.png">
             <button onClick={onClick}>
                 Download Canvas
             </button>
@@ -53,14 +82,16 @@ function ColorChooser(props) {
 }
 
 function Layer(props) {
-    const {width, height, color, canvas, brushSize} = props;
-    const [paths, setPaths] = useState([]);
+    const {width, height, color, brushSize, paths, setPaths, index} = props;
+    const canvas = useRef();
+    // const [paths, setPaths] = useState([]);
 
-    // Path format [color, size, start, [points]]
+    // Path format [type, color, size, start, [points]]
     function handleMouseDown(event) {
+        console.log(index);
         if (event.buttons & 1) {
             const newPaths = paths.slice();
-            newPaths.push(["path",
+            newPaths[index].push(["path",
                 color, brushSize, 
                 [event.nativeEvent.offsetX / width, 
                 event.nativeEvent.offsetY / height]]);
@@ -70,25 +101,18 @@ function Layer(props) {
 
     function handleMouseMove(event) {
         if (event.buttons & 1) {
-            updatePath(event, width, height, paths, setPaths);
+            updatePath(event, width, height, paths, setPaths, index);
         }
     }
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
-        paths.forEach((value) => {
-            switch (value[0]) {
-                case("path"):
-                    drawPath(ctx, width, height, value);
-                    break;
-                default:
-                    console.error("undefined thingy");
-            }
-        });
-    });
+        drawLayer(ctx, paths[index], width, height);
+    }, [paths, width, height, canvas, index]);
 
     return (
         <canvas className='canvas'
+            z-index={index}
             ref={canvas}
             width={width}
             height={height}
@@ -100,23 +124,40 @@ function Layer(props) {
 
 function Canvas(props) {
     const {width, height} = props;
-    const canvas = useRef();
+    // const canvas = useRef();
     const [color, setColor] = useState('#000000');
     const [brushSize, setBrushSize] = useState(5);
+    const [paths, setPaths] = useState([]);
+
+    const layers = paths.map((value, index) => {
+        return <Layer
+            width={width}
+            height={height}
+            brushSize={brushSize}
+            color={color}
+            paths={paths}
+            setPaths={setPaths}
+            index={index}
+            key={index} />
+    })
 
     return (
         <div>
             <div>
+                <AddLayer paths={paths} setPaths={setPaths} />
                 <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
                 <ColorChooser color={color} setColor={setColor} />
-                <Download canvas={canvas}/>
+                <Download paths={paths} width={width} height={height}/>
             </div>
-            <Layer 
+            <div id="layer-container" width={width * 1.25} height={height * 1.25}>
+                {layers}
+            </div>
+            {/* <Layer 
                 width={width} 
                 height={height} 
                 brushSize={brushSize}
                 color={color} 
-                canvas={canvas}/>
+                canvas={canvas}/> */}
         </div>
     )
 }
