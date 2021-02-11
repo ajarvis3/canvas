@@ -2,6 +2,24 @@ import {useEffect, useRef, useState} from 'react';
 
 import "./Canvas.css";
 
+function Download(props) {
+    const {canvas} = props;
+    const aTag = useRef();
+
+    function onClick() {
+        const img = canvas.current.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        aTag.current.setAttribute("href", img);
+    }
+
+    return (
+        <a ref={aTag} download="canvas.png">
+            <button onClick={onClick}>
+                Download Canvas
+            </button>
+        </a>
+    )
+}
+
 function ColorChooser(props) {
     const {color, setColor} = props;
 
@@ -10,19 +28,16 @@ function ColorChooser(props) {
     }
 
     return (
-        <div>
             <input 
                 className="color-chooser"
                 type="color" 
                 value={color} 
                 onChange={handleChange} />
-        </div>
     )
 }
 
 function DrawingArea(props) {
-    const {width, height, color} = props;
-    const canvas = useRef();
+    const {width, height, color, canvas} = props;
     const [paths, setPaths] = useState([]);
 
     function handleMouseDown(event) {
@@ -70,13 +85,17 @@ function DrawingArea(props) {
 
 function Canvas(props) {
     const {width, height} = props;
+    const canvas = useRef();
     const [color, setColor] = useState('#000000');
     console.log(color);
 
     return (
         <div>
-            <ColorChooser color={color} setColor={setColor} />
-            <DrawingArea width={width} height={height} color={color} />
+            <div>
+                <ColorChooser color={color} setColor={setColor} />
+                <Download canvas={canvas}/>
+            </div>
+            <DrawingArea width={width} height={height} color={color} canvas={canvas}/>
         </div>
     )
 }
