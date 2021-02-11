@@ -4,8 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start": "yarn run webpack && babel-node index.js",
-    "webpack": "rimraf ./dist && npx webpack --config webpack.config.js"
+    "start": "yarn webpack && babel-node index.js",
+    "webpack": "yarn clean && npx webpack --config webpack.config.js",
+    "clean": "rimraf ./dist"
   },
   "dependencies": {
     "babel-cli": "^6.26.0",
