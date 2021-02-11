@@ -1,6 +1,22 @@
 import {useEffect, useRef, useState} from 'react';
-
+import {drawPath} from './Utils/DrawingUtils';
+import {updatePath} from './Utils/UpdateUtils';
 import "./Canvas.css";
+
+function BrushSizer(props) {
+    const {brushSize, setBrushSize} = props;
+
+    function handleChange(event) {
+        setBrushSize(event.target.value);
+    }
+
+    return (
+        <span>
+            <label>Brush Size:</label>
+            <input type="number" value={brushSize}  onChange={handleChange}/>
+        </span> 
+    )
+}
 
 function Download(props) {
     const {canvas} = props;
@@ -36,14 +52,17 @@ function ColorChooser(props) {
     )
 }
 
-function DrawingArea(props) {
-    const {width, height, color, canvas} = props;
+function Layer(props) {
+    const {width, height, color, canvas, brushSize} = props;
     const [paths, setPaths] = useState([]);
 
+    // Path format [color, size, start, [points]]
     function handleMouseDown(event) {
         if (event.buttons & 1) {
             const newPaths = paths.slice();
-            newPaths.push([color, [event.nativeEvent.offsetX / width, 
+            newPaths.push(["path",
+                color, brushSize, 
+                [event.nativeEvent.offsetX / width, 
                 event.nativeEvent.offsetY / height]]);
             setPaths(newPaths);    
         }
@@ -51,24 +70,20 @@ function DrawingArea(props) {
 
     function handleMouseMove(event) {
         if (event.buttons & 1) {
-            const newPaths = paths.slice();
-            const currPath = newPaths[newPaths.length - 1];
-            currPath.push([event.nativeEvent.offsetX / width, 
-                event.nativeEvent.offsetY / height]);
-            setPaths(newPaths);
+            updatePath(event, width, height, paths, setPaths);
         }
     }
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
         paths.forEach((value) => {
-            ctx.strokeStyle = value[0];
-            ctx.beginPath();
-            ctx.moveTo(value[1][0] * width, value[1][1] * height);
-            for (let i = 2; i < value.length; i++) {
-                ctx.lineTo(value[i][0] * width, value[i][1] * height);
+            switch (value[0]) {
+                case("path"):
+                    drawPath(ctx, width, height, value);
+                    break;
+                default:
+                    console.error("undefined thingy");
             }
-            ctx.stroke();
         });
     });
 
@@ -87,15 +102,21 @@ function Canvas(props) {
     const {width, height} = props;
     const canvas = useRef();
     const [color, setColor] = useState('#000000');
-    console.log(color);
+    const [brushSize, setBrushSize] = useState(5);
 
     return (
         <div>
             <div>
+                <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
                 <ColorChooser color={color} setColor={setColor} />
                 <Download canvas={canvas}/>
             </div>
-            <DrawingArea width={width} height={height} color={color} canvas={canvas}/>
+            <Layer 
+                width={width} 
+                height={height} 
+                brushSize={brushSize}
+                color={color} 
+                canvas={canvas}/>
         </div>
     )
 }
