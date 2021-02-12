@@ -1,3 +1,28 @@
+.canvas-control{
+    margin-left: 0%;
+} 
+
 .color-chooser {
     margin: 5px;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    background-color:white;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: black;
+    text-align: center;
+    position: absolute;
+    z-index: 1;
+}
+
+.icon-container {
+    display: inline-block;
+    margin: 10px;
+    color: black;
+}
+
+.icon-container:hover .tooltiptext {
+    visibility: visible;
 }

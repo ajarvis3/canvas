@@ -1,17 +1,28 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 import './App.css';
 import Canvas from './Canvas';
 
 function App() {
-  const scale = .8;
-  const [width, setWidth] = useState(window.outerHeight * scale * 1.5);
-  const [height, setHeight] = useState(window.outerHeight * scale);
+  const scale = .75;
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  function setDimensions() {
+    const body = window.document.body
+    const base = body.clientHeight * 1.5 > body.clientWidth ? 
+                  body.clientWidth * 2 / 3: body.clientHeight;
+    setWidth(base * scale * 1.5);
+    setHeight(base * scale);           
+  }
 
   window.onresize = () => {
-    setWidth(window.outerHeight * scale * 1.5);
-    setHeight(window.outerHeight * scale);
+    setDimensions()
   }
+
+  useEffect(() => {
+    setDimensions();
+  }, []);
 
   return (
     <div className="App">

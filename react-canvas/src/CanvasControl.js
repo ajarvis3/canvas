@@ -1,5 +1,6 @@
 import {useCallback, useRef} from 'react';
 import {drawLayer} from "./Utils/DrawingUtils"
+import {BsCheckCircle, BsCircle, BsLayersFill, BsDownload} from 'react-icons/bs';
 
 import "./CanvasControl.css";
 
@@ -11,16 +12,14 @@ import "./CanvasControl.css";
 function Transparent(props) {
     const {transparent, setTransparent} = props;
 
-    function handleChange(event) {
+    function handleChange() {
         setTransparent(!transparent);
     }
 
     return (
-        <span>
-            <label>
-                Transparent background?
-                <input type="checkbox" onChange={handleChange} checked={transparent}/>
-            </label>
+        <span className="icon-container" onClick={handleChange}>
+            {transparent ? <BsCheckCircle /> : <BsCircle /> }
+            <span className="tooltiptext">Transparent Background?</span>
         </span>
     )
 }
@@ -40,9 +39,10 @@ function AddLayer(props) {
     }, [paths, setPaths, setActive]);
 
     return (
-        <button onClick={handleChange}>
-            Add Layer
-        </button>
+        <span className="icon-container" onClick={handleChange}>
+            <BsLayersFill />
+            <span className="tooltiptext">Add a Layer</span>
+        </span>
     )
 }
 
@@ -91,10 +91,9 @@ function Download(props) {
     }
 
     return (
-        <a ref={aTag} href="/#" download="canvas.png">
-            <button onClick={onClick}>
-                Download Canvas
-            </button>
+        <a ref={aTag} href="/#" download="canvas.png" className="icon-container">
+            <BsDownload onClick={onClick}/>
+            <span className="tooltiptext">Download</span>
         </a>
     )
 }
@@ -104,28 +103,96 @@ function Download(props) {
  * @param {*} props 
  */
 function ColorChooser(props) {
-    const {color, setColor} = props;
+    const {color, setColor, tipText} = props;
 
     function handleChange(event) {
         setColor(event.target.value);
     }
 
     return (
-        <input 
-            className="color-chooser"
-            type="color" 
-            value={color} 
-            onChange={handleChange} />
+        <span className="icon-container">
+            <input 
+                className="color-chooser"
+                type="color" 
+                value={color} 
+                onChange={handleChange} />
+            <span className="tooltiptext">
+                {tipText}
+            </span>
+        </span>
     )
 }
 
-function BackgroundChooser(props) {
-    const {backgroundColor, setBackgroundColor} = props;
+/**
+ * Options for downloading
+ * @param {*} props 
+ */
+function DownloadOptions(props) {
+    const {paths, width, height, backgroundColor, transparent} = props;
 
     return (
         <span>
-            Background Color:
-            <ColorChooser color={backgroundColor} setColor={setBackgroundColor}/>
+            <Download 
+                paths={paths} 
+                width={width} 
+                height={height} 
+                backgroundColor={backgroundColor}
+                transparent={transparent} />
+        </span>
+    )
+}
+
+/**
+ * Options related to the brush
+ * @param {*} props 
+ */
+function BrushOptions(props) {
+    const {brushSize, setBrushSize, color, setColor} = props;
+
+    return (
+        <span>
+            <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
+            <ColorChooser 
+                color={color} 
+                setColor={setColor}
+                tipText="Brush Color" />
+        </span>
+    )
+}
+
+/**
+ * Contains Options related to layers
+ * @param {*} props 
+ */
+function LayerOptions(props) {
+    const {paths, setPaths, setActive} = props;
+
+    return (
+        <span>
+            <AddLayer 
+                paths={paths} 
+                setPaths={setPaths}
+                setActive={setActive} />
+        </span>
+    );
+}
+
+/**
+ * Contains Options related to Background
+ * @param {*} props 
+ */
+function BackgroundOptions(props) {
+    const {transparent, setTransparent, backgroundColor, setBackgroundColor} = props;
+
+    return (
+        <span>
+            <Transparent transparent={transparent} setTransparent={setTransparent} />
+            { !transparent &&
+                <ColorChooser
+                    color={backgroundColor} 
+                    setColor={setBackgroundColor}
+                    tipText="Background Color" />
+            }
         </span>
     )
 }
@@ -146,17 +213,22 @@ function CanvasControl(props) {
             height} = props;
     return (
         <div className="canvas-control">
-            <Transparent transparent={transparent} setTransparent={setTransparent} />
-            { !transparent &&
-                <BackgroundChooser backgroundColor={backgroundColor} setBackgroundColor={setBackgroundColor} />
-            }
-            <AddLayer 
+            <BackgroundOptions 
+                transparent={transparent}
+                setTransparent={setTransparent}
+                backgroundColor={backgroundColor}
+                setBackgroundColor={setBackgroundColor} />
+            <LayerOptions 
                 paths={paths} 
                 setPaths={setPaths}
                 setActive={setActive} />
-            <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
-            <ColorChooser color={color} setColor={setColor} />
-            <Download 
+            <BrushOptions
+                brushSize={brushSize}
+                setBrushSize={setBrushSize}
+                color={color}
+                setColor={setColor} />
+
+            <DownloadOptions 
                 paths={paths} 
                 width={width} 
                 height={height} 

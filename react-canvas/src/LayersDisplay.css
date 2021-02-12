@@ -2,6 +2,7 @@
     border-style: solid;
     border-color: silver;
     border-width: 3px;
+    margin-left:0;
 }
 
 .mini-layer.active {
@@ -12,4 +13,5 @@
     display: flex;
     flex-direction: column;
     margin: 40px;
+    width: 10%;
 }
