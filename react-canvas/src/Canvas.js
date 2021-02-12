@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import { drawLayer } from './Utils/DrawingUtils';
 import {updatePath} from './Utils/UpdateUtils';
-import CanvasControl from "./CanvasControl";
+import CanvasControl from "./CanvasControl/CanvasControl";
 import LayersDisplay from "./LayersDisplay";
 import "./Canvas.css";
 
@@ -36,26 +36,36 @@ function Background(props) {
  * @param {*} props 
  */
 function Layer(props) {
-    const {width, height, color, brushSize, paths, setPaths, index, active} = props;
+    const {width, 
+            height, 
+            color, 
+            brushSize, 
+            paths, 
+            setPaths, 
+            index, 
+            active,
+            brushType} = props;
     const canvas = useRef();
 
     // Path format [type, color, size, start, [points]]
     const handleMouseDown = useCallback((event) => {
         if (event.buttons & 1) {
             const newPaths = paths.slice();
-            newPaths[index].push(["path",
+            newPaths[index].push([brushType,
                 color, brushSize, 
                 [event.nativeEvent.offsetX / width, 
                 event.nativeEvent.offsetY / height]]);
             setPaths(newPaths);    
         }
-    }, [paths, color, brushSize, width, height, setPaths, index]);
+    }, [paths, color, brushSize, width, height, setPaths, index, brushType]);
 
     const handleMouseMove = useCallback((event) => {
         if (event.buttons & 1) {
-            updatePath(event, width, height, paths, setPaths, index);
+            if (brushType === "brush") {
+                updatePath(event, width, height, paths, setPaths, index);
+            }
         }
-    }, [width, height, paths, setPaths, index]);
+    }, [width, height, paths, setPaths, index, brushType]);
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
@@ -79,6 +89,7 @@ function Canvas(props) {
     // const canvas = useRef();
     const [color, setColor] = useState('#000000');
     const [brushSize, setBrushSize] = useState(5);
+    const [brushType, setBrushType] = useState("brush");
     const [paths, setPaths] = useState([[]]);
     const [active, setActive] = useState();
     const [backgroundColor, setBackgroundColor] = useState("#ffffff");
@@ -94,7 +105,8 @@ function Canvas(props) {
             paths={paths}
             setPaths={setPaths}
             index={index}
-            key={index} />
+            key={index}
+            brushType={brushType} />
     });
     // bit hacky, but it works now
     layers.push(layers.splice(active, 1));
@@ -116,6 +128,8 @@ function Canvas(props) {
                     setTransparent={setTransparent}
                     width={width}
                     height={height}
+                    brushType={brushType}
+                    setBrushType={setBrushType}
                 />
                 <div id="layer-container" width={width * 1.25} height={height * 1.25}>
                     <Background 

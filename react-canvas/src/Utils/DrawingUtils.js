@@ -24,7 +24,7 @@ export function drawPath(ctx, width, height, path) {
 export function drawLayer(ctx, paths, width, height) {
     paths.forEach((value) => {
         switch (value[0]) {
-            case("path"):
+            case("brush"):
                 drawPath(ctx, width, height, value);
                 break;
             default:
