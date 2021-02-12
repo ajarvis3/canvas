@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import {BsDownload} from 'react-icons/bs';
 
-import {drawLayer} from "../Utils/DrawingUtils";
+import {drawCanvas} from "../Utils/DrawingUtils";
 
 import "./CanvasControl.css"
 
@@ -21,9 +21,7 @@ function Download(props) {
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, width, height);    
     }
-    paths.forEach((layer) => {
-        drawLayer(ctx, layer, width, height);
-    })
+    drawCanvas(ctx, paths, width, height);
 
     function onClick() {
         const img = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");

@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import { drawLayer } from './Utils/DrawingUtils';
+import { drawCanvas, drawItem } from './Utils/DrawingUtils';
 import {updatePath, updateRect} from './Utils/UpdateUtils';
 import CanvasControl from "./CanvasControl/CanvasControl";
 import LayersDisplay from "./LayersDisplay";
@@ -23,7 +23,7 @@ function Background(props) {
     return (
         <canvas className='layer'
             ref={canvas}
-            z-index={-1}
+            z-index={0}
             width={width}
             height={height}>
         </canvas>
@@ -31,6 +31,82 @@ function Background(props) {
 
 }
 
+/**
+ * Area where all drawing will actually happen
+ * @param {*} props 
+ */
+function ScratchSpace(props) {
+    const {width, 
+        height, 
+        color, 
+        brushSize, 
+        path, 
+        setPath, 
+        paths,
+        setPaths,
+        index, 
+        brushType} = props;
+    const canvas = useRef();
+
+    // Path format [type, color, size, start, [points]]
+    const handleMouseDown = useCallback((event) => {
+        if (event.buttons & 1) {
+            var newPath;
+            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
+                newPath = [brushType[0],
+                color, brushSize, 
+                [event.nativeEvent.offsetX / width, 
+                event.nativeEvent.offsetY / height]];
+            } else if (brushType[0] === "Rectangle" || brushType[0] === "Ellipse") {
+                newPath = [brushType[0],
+                    color, brushSize, 
+                    [event.nativeEvent.offsetX / width, 
+                    event.nativeEvent.offsetY / height],
+                    [event.nativeEvent.offsetX / width, 
+                    event.nativeEvent.offsetY / height]];    
+            }
+            setPath(newPath);    
+        }
+    }, [color, brushSize, width, height, setPath, brushType]);
+
+    // Updates current drawing
+    const handleMouseMove = useCallback((event) => {
+        if (event.buttons & 1) {
+            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
+                updatePath(event, width, height, path, setPath);
+            } else if (brushType[0] === "Rectangle"  || brushType[0] === "Ellipse") {
+                updateRect(event, width, height, path, setPath);
+            }
+        }
+    }, [width, height, path, setPath, brushType]);
+
+    const handleMouseUp = useCallback((event) => {
+        const newPaths = paths.slice();
+        const layer = newPaths[index];
+        layer.push(path);
+        setPaths(newPaths);
+        setPath([]);
+    }, [path, setPath, paths, setPaths, index]);
+
+    // Draws on canvas after render
+    useEffect(() => {
+        const ctx = canvas.current.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        drawItem(ctx, width, height, path);
+    }, [path, width, height, canvas]);
+
+    return (
+        <canvas className='layer'
+            z-index={2}
+            ref={canvas}
+            width={width}
+            height={height}
+            onMouseDown={handleMouseDown} 
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}>
+        </canvas>
+    )    
+}
 
 /**
  * A single layer
@@ -39,59 +115,22 @@ function Background(props) {
 function Layer(props) {
     const {width, 
             height, 
-            color, 
-            brushSize, 
-            paths, 
-            setPaths, 
-            index, 
-            active,
-            brushType} = props;
+            paths} = props;
     const canvas = useRef();
 
-    // Path format [type, color, size, start, [points]]
-    const handleMouseDown = useCallback((event) => {
-        if (event.buttons & 1) {
-            const newPaths = paths.slice();
-            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
-                newPaths[index].push([brushType[0],
-                    color, brushSize, 
-                    [event.nativeEvent.offsetX / width, 
-                    event.nativeEvent.offsetY / height]]);    
-            } else if (brushType[0] === "Rectangle" || brushType[0] === "Ellipse") {
-                newPaths[index].push([brushType[0],
-                    color, brushSize, 
-                    [event.nativeEvent.offsetX / width, 
-                    event.nativeEvent.offsetY / height],
-                    [event.nativeEvent.offsetX / width, 
-                    event.nativeEvent.offsetY / height]]);    
-            }
-            setPaths(newPaths);    
-        }
-    }, [paths, color, brushSize, width, height, setPaths, index, brushType]);
-
-    const handleMouseMove = useCallback((event) => {
-        if (event.buttons & 1) {
-            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
-                updatePath(event, width, height, paths, setPaths, index);
-            } else if (brushType[0] === "Rectangle"  || brushType[0] === "Ellipse") {
-                updateRect(event, width, height, paths, setPaths, index);
-            }
-        }
-    }, [width, height, paths, setPaths, index, brushType]);
-
+    // Draws on canvas after render
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
-        drawLayer(ctx, paths[index], width, height);
-    }, [paths, width, height, canvas, index]);
+        ctx.clearRect(0, 0, width, height);
+        drawCanvas(ctx, paths, width, height);
+    }, [paths, width, height, canvas]);
 
     return (
         <canvas className='layer'
-            z-index={!active ? index : index}
+            z-index={1}
             ref={canvas}
             width={width}
-            height={height}
-            onMouseDown={handleMouseDown} 
-            onMouseMove={handleMouseMove}>
+            height={height}>
         </canvas>
     )
 }
@@ -102,26 +141,11 @@ function Canvas(props) {
     const [color, setColor] = useState('#000000');
     const [brushSize, setBrushSize] = useState(5);
     const [brushType, setBrushType] = useState(brushes[0]);
+    const [path, setPath] = useState([]);
     const [paths, setPaths] = useState([[]]);
-    const [active, setActive] = useState();
+    const [active, setActive] = useState(0);
     const [backgroundColor, setBackgroundColor] = useState("#ffffff");
     const [transparent, setTransparent] = useState(true);
-
-    const layers = paths.map((value, index) => {
-        return <Layer
-            active={active===index}
-            width={width}
-            height={height}
-            brushSize={brushSize}
-            color={color}
-            paths={paths}
-            setPaths={setPaths}
-            index={index}
-            key={index}
-            brushType={brushType} />
-    });
-    // bit hacky, but it works now
-    layers.push(layers.splice(active, 1));
 
     return (
         <div className="canvas">
@@ -149,7 +173,22 @@ function Canvas(props) {
                         height={height} 
                         color={backgroundColor} 
                         transparent={transparent} />
-                    {layers}
+                    <Layer
+                        width={width}
+                        height={height}
+                        paths={paths}
+                        index={active} />
+                    <ScratchSpace
+                        width={width}
+                        height={height}
+                        color={color}
+                        brushSize={brushSize}
+                        path={path}
+                        setPath={setPath}
+                        paths={paths}
+                        setPaths={setPaths}
+                        index={active}
+                        brushType={brushType} />
                 </div>
             </div>
             <LayersDisplay 

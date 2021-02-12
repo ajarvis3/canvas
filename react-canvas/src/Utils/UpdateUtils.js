@@ -1,9 +1,8 @@
-export function updatePath(event, width, height, paths, setPaths, index) {
-    const newPaths = paths.slice();
-    const currPath = newPaths[index][newPaths[index].length - 1];
+export function updatePath(event, width, height, path, setPath) {
+    const currPath = path.slice();
     currPath.push([event.nativeEvent.offsetX / width, 
         event.nativeEvent.offsetY / height]);
-    setPaths(newPaths);
+    setPath(currPath);
 }
 
 /**
@@ -15,10 +14,9 @@ export function updatePath(event, width, height, paths, setPaths, index) {
  * @param {*} setPaths 
  * @param {*} index 
  */
-export function updateRect(event, width, height, paths, setPaths, index) {
-    const newPaths = paths.slice();
-    const currPath = newPaths[index][newPaths[index].length - 1];
+export function updateRect(event, width, height, path, setPath) {
+    const currPath = path.slice();
     currPath[4] = [event.nativeEvent.offsetX / width, 
         event.nativeEvent.offsetY / height];
-    setPaths(newPaths);
+    setPath(currPath);
 }

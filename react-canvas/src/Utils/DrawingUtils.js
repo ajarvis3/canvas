@@ -87,6 +87,34 @@ export function drawEllipse(ctx, width, height, path, strokeScale = 1) {
 }
 
 /**
+ * Draws a single item
+ * @param {*} ctx 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} value 
+ * @param {*} strokeScale 
+ */
+export function drawItem(ctx, width, height, value, strokeScale = 1) {
+    if (value.length === 0) return;
+    switch (value[0]) {
+        case("Brush"):
+            drawPath(ctx, width, height, value, strokeScale);
+            break;
+        case("Polygon"):
+            drawPolygon(ctx, width, height, value, strokeScale);
+            break;
+        case("Rectangle"):
+            drawRectangle(ctx, width, height, value, strokeScale);
+            break;
+        case("Ellipse"):
+            drawEllipse(ctx, width, height, value, strokeScale);
+            break;
+        default:
+            console.error("undefined thingy");
+    }
+}
+
+/**
  * Draws all paths of a given layer
  * @param {*} ctx 
  * @param {*} paths 
@@ -94,23 +122,22 @@ export function drawEllipse(ctx, width, height, path, strokeScale = 1) {
  * @param {*} height 
  */
 export function drawLayer(ctx, paths, width, height, strokeScale = 1) {
-    ctx.clearRect(0, 0, width, height);
+    if (paths.length === 0) return;
     paths.forEach((value) => {
-        switch (value[0]) {
-            case("Brush"):
-                drawPath(ctx, width, height, value, strokeScale);
-                break;
-            case("Polygon"):
-                drawPolygon(ctx, width, height, value, strokeScale);
-                break;
-            case("Rectangle"):
-                drawRectangle(ctx, width, height, value, strokeScale);
-                break;
-            case("Ellipse"):
-                drawEllipse(ctx, width, height, value, strokeScale);
-                break;
-            default:
-                console.error("undefined thingy");
-        }
+        drawItem(ctx, width, height, value, strokeScale);
+    });
+}
+
+/**
+ * Draws all layers of a canvas
+ * @param {*} ctx 
+ * @param {*} paths 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} strokeScale 
+ */
+export function drawCanvas(ctx, paths, width, height, strokeScale = 1) {
+    paths.forEach((value) => {
+        drawLayer(ctx, value, width, height, strokeScale);
     });
 }
