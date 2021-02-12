@@ -8,6 +8,7 @@ function drawCommonAll(ctx, path, strokeScale) {
     console.log(path);
     ctx.strokeStyle = path[1];
     ctx.lineWidth = path[2] * strokeScale;
+    ctx.beginPath();
 }
 
 /**
@@ -19,7 +20,6 @@ function drawCommonAll(ctx, path, strokeScale) {
  */
 function drawPathCommon(ctx, width, height, path, strokeScale) {
     drawCommonAll(ctx, path, strokeScale);
-    ctx.beginPath();
     ctx.moveTo(path[3][0] * width, path[3][1] * height);
     for (let i = 4; i < path.length; i++) {
         ctx.lineTo(path[i][0] * width, path[i][1] * height);
@@ -34,6 +34,7 @@ function drawPathCommon(ctx, width, height, path, strokeScale) {
 export function drawPath(ctx, width, height, path, strokeScale = 1) {
     drawPathCommon(ctx, width, height, path, strokeScale);
     ctx.stroke();
+    console.log('done path');
 }
 
 export function drawPolygon(ctx, width, height, path, strokeScale = 1) {
@@ -43,6 +44,7 @@ export function drawPolygon(ctx, width, height, path, strokeScale = 1) {
 }
 
 export function drawRectangle(ctx, width, height, path, strokeScale = 1) {
+    console.log('start rect');
     drawCommonAll(ctx, path, strokeScale);
     const x = path[3][0] * width;
     const y = path[3][1] * height;
@@ -50,6 +52,7 @@ export function drawRectangle(ctx, width, height, path, strokeScale = 1) {
     const h = path[4][1] * height - y;
     ctx.rect(x, y, w, h);
     ctx.stroke();
+    console.log('done rect');
 }
 
 /**
