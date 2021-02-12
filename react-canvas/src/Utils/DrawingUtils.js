@@ -5,7 +5,6 @@
  * @param {*} strokeScale 
  */
 function drawCommonAll(ctx, path, strokeScale) {
-    console.log(path);
     ctx.strokeStyle = path[1];
     ctx.lineWidth = path[2] * strokeScale;
     ctx.beginPath();
@@ -34,17 +33,31 @@ function drawPathCommon(ctx, width, height, path, strokeScale) {
 export function drawPath(ctx, width, height, path, strokeScale = 1) {
     drawPathCommon(ctx, width, height, path, strokeScale);
     ctx.stroke();
-    console.log('done path');
 }
 
+/**
+ * Draws a closed shape
+ * @param {*} ctx 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} path 
+ * @param {*} strokeScale 
+ */
 export function drawPolygon(ctx, width, height, path, strokeScale = 1) {
     drawPathCommon(ctx, width, height, path, strokeScale);
     ctx.closePath();
     ctx.stroke();
 }
 
+/**
+ * Draws a rectangle
+ * @param {*} ctx 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} path 
+ * @param {*} strokeScale 
+ */
 export function drawRectangle(ctx, width, height, path, strokeScale = 1) {
-    console.log('start rect');
     drawCommonAll(ctx, path, strokeScale);
     const x = path[3][0] * width;
     const y = path[3][1] * height;
@@ -52,7 +65,25 @@ export function drawRectangle(ctx, width, height, path, strokeScale = 1) {
     const h = path[4][1] * height - y;
     ctx.rect(x, y, w, h);
     ctx.stroke();
-    console.log('done rect');
+}
+
+/**
+ * Draws an ellipse
+ * @param {*} ctx 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} path 
+ * @param {*} strokeScale 
+ */
+export function drawEllipse(ctx, width, height, path, strokeScale = 1) {
+    drawCommonAll(ctx, path, strokeScale);
+    const w = (path[4][0] * width - path[3][0] * width) / 2;
+    const h = (path[4][1] * height - path[3][1] * height) / 2;
+    const x = path[3][0] * width + w;
+    const y = path[3][1] * height + h;
+    // always draws an unrotated ellipse
+    ctx.ellipse(x, y, Math.abs(w), Math.abs(h), 0, 0, 2 * Math.PI);
+    ctx.stroke();
 }
 
 /**
@@ -74,6 +105,9 @@ export function drawLayer(ctx, paths, width, height, strokeScale = 1) {
                 break;
             case("Rectangle"):
                 drawRectangle(ctx, width, height, value, strokeScale);
+                break;
+            case("Ellipse"):
+                drawEllipse(ctx, width, height, value, strokeScale);
                 break;
             default:
                 console.error("undefined thingy");

@@ -57,7 +57,7 @@ function Layer(props) {
                     color, brushSize, 
                     [event.nativeEvent.offsetX / width, 
                     event.nativeEvent.offsetY / height]]);    
-            } else if (brushType[0] === "Rectangle") {
+            } else if (brushType[0] === "Rectangle" || brushType[0] === "Ellipse") {
                 newPaths[index].push([brushType[0],
                     color, brushSize, 
                     [event.nativeEvent.offsetX / width, 
@@ -73,7 +73,7 @@ function Layer(props) {
         if (event.buttons & 1) {
             if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
                 updatePath(event, width, height, paths, setPaths, index);
-            } else if (brushType[0] === "Rectangle") {
+            } else if (brushType[0] === "Rectangle"  || brushType[0] === "Ellipse") {
                 updateRect(event, width, height, paths, setPaths, index);
             }
         }
