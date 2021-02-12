@@ -6,13 +6,17 @@ import LayersDisplay from "./LayersDisplay";
 import "./Canvas.css";
 
 function Background(props) {
-    const {width, height, color} = props;
+    const {width, height, color, transparent} = props;
     const canvas = useRef();
 
     useEffect(() => {
         var ctx = canvas.current.getContext('2d');
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, width, height);
+        if (!transparent) {
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, width, height);    
+        } else {
+            ctx.clearRect(0, 0, width, height);
+        }
     });
 
     return (
@@ -60,7 +64,7 @@ function Layer(props) {
 
     return (
         <canvas className='layer'
-            z-index={!active ? index : paths.length}
+            z-index={!active ? index : index}
             ref={canvas}
             width={width}
             height={height}
@@ -78,6 +82,7 @@ function Canvas(props) {
     const [paths, setPaths] = useState([[]]);
     const [active, setActive] = useState();
     const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+    const [transparent, setTransparent] = useState(true);
 
     const layers = paths.map((value, index) => {
         return <Layer
@@ -107,11 +112,17 @@ function Canvas(props) {
                     setColor={setColor}
                     backgroundColor={backgroundColor}
                     setBackgroundColor={setBackgroundColor}
+                    transparent={transparent}
+                    setTransparent={setTransparent}
                     width={width}
                     height={height}
                 />
                 <div id="layer-container" width={width * 1.25} height={height * 1.25}>
-                    <Background width={width} height={height} color={backgroundColor} />
+                    <Background 
+                        width={width} 
+                        height={height} 
+                        color={backgroundColor} 
+                        transparent={transparent} />
                     {layers}
                 </div>
             </div>

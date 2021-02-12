@@ -4,6 +4,28 @@ import {drawLayer} from "./Utils/DrawingUtils"
 import "./CanvasControl.css";
 
 /**
+ * Choose a transparent background.
+ * Or not.
+ * @param {*} props 
+ */
+function Transparent(props) {
+    const {transparent, setTransparent} = props;
+
+    function handleChange(event) {
+        setTransparent(!transparent);
+    }
+
+    return (
+        <span>
+            <label>
+                Transparent background?
+                <input type="checkbox" onChange={handleChange} checked={transparent}/>
+            </label>
+        </span>
+    )
+}
+
+/**
  * Control for adding a layer
  * @param {*} props 
  */
@@ -48,15 +70,17 @@ function BrushSizer(props) {
  * @param {*} props 
  */
 function Download(props) {
-    const {paths, width, height, backgroundColor} = props;
+    const {paths, width, height, backgroundColor, transparent} = props;
     const aTag = useRef();
     
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(0, 0, width, height);
+    if (!transparent) {
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, width, height);    
+    }
     paths.forEach((layer) => {
         drawLayer(ctx, layer, width, height);
     })
@@ -95,6 +119,17 @@ function ColorChooser(props) {
     )
 }
 
+function BackgroundChooser(props) {
+    const {backgroundColor, setBackgroundColor} = props;
+
+    return (
+        <span>
+            Background Color:
+            <ColorChooser color={backgroundColor} setColor={setBackgroundColor}/>
+        </span>
+    )
+}
+
 function CanvasControl(props) {
     const {paths, 
             setPaths, 
@@ -105,19 +140,28 @@ function CanvasControl(props) {
             setColor, 
             backgroundColor,
             setBackgroundColor,
+            transparent,
+            setTransparent,
             width, 
             height} = props;
     return (
         <div className="canvas-control">
-            Background Color:
-            <ColorChooser color={backgroundColor} setColor={setBackgroundColor}/>
+            <Transparent transparent={transparent} setTransparent={setTransparent} />
+            { !transparent &&
+                <BackgroundChooser backgroundColor={backgroundColor} setBackgroundColor={setBackgroundColor} />
+            }
             <AddLayer 
                 paths={paths} 
                 setPaths={setPaths}
                 setActive={setActive} />
             <BrushSizer brushSize={brushSize} setBrushSize={setBrushSize} />
             <ColorChooser color={color} setColor={setColor} />
-            <Download paths={paths} width={width} height={height} backgroundColor={backgroundColor}/>
+            <Download 
+                paths={paths} 
+                width={width} 
+                height={height} 
+                backgroundColor={backgroundColor}
+                transparent={transparent} />
         </div>
     );
 }
