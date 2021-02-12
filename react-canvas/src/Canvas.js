@@ -1,9 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import { drawLayer } from './Utils/DrawingUtils';
-import {updatePath} from './Utils/UpdateUtils';
+import {updatePath, updateRect} from './Utils/UpdateUtils';
 import CanvasControl from "./CanvasControl/CanvasControl";
 import LayersDisplay from "./LayersDisplay";
 import "./Canvas.css";
+import {brushes} from "./Constants";
 
 function Background(props) {
     const {width, height, color, transparent} = props;
@@ -51,18 +52,29 @@ function Layer(props) {
     const handleMouseDown = useCallback((event) => {
         if (event.buttons & 1) {
             const newPaths = paths.slice();
-            newPaths[index].push([brushType,
-                color, brushSize, 
-                [event.nativeEvent.offsetX / width, 
-                event.nativeEvent.offsetY / height]]);
+            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
+                newPaths[index].push([brushType[0],
+                    color, brushSize, 
+                    [event.nativeEvent.offsetX / width, 
+                    event.nativeEvent.offsetY / height]]);    
+            } else if (brushType[0] === "Rectangle") {
+                newPaths[index].push([brushType[0],
+                    color, brushSize, 
+                    [event.nativeEvent.offsetX / width, 
+                    event.nativeEvent.offsetY / height],
+                    [event.nativeEvent.offsetX / width, 
+                    event.nativeEvent.offsetY / height]]);    
+            }
             setPaths(newPaths);    
         }
     }, [paths, color, brushSize, width, height, setPaths, index, brushType]);
 
     const handleMouseMove = useCallback((event) => {
         if (event.buttons & 1) {
-            if (brushType === "brush") {
+            if (brushType[0] === "Brush" || brushType[0] === "Polygon") {
                 updatePath(event, width, height, paths, setPaths, index);
+            } else if (brushType[0] === "Rectangle") {
+                updateRect(event, width, height, paths, setPaths, index);
             }
         }
     }, [width, height, paths, setPaths, index, brushType]);
@@ -89,7 +101,7 @@ function Canvas(props) {
     // const canvas = useRef();
     const [color, setColor] = useState('#000000');
     const [brushSize, setBrushSize] = useState(5);
-    const [brushType, setBrushType] = useState("brush");
+    const [brushType, setBrushType] = useState(brushes[0]);
     const [paths, setPaths] = useState([[]]);
     const [active, setActive] = useState();
     const [backgroundColor, setBackgroundColor] = useState("#ffffff");

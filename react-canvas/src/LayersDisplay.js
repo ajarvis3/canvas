@@ -16,7 +16,7 @@ function MiniLayers(props) {
 
     useEffect(() => {
         const ctx = canvas.current.getContext('2d');
-        drawLayer(ctx, paths[index], width, height);
+        drawLayer(ctx, paths[index], width, height, .1);
     }, [paths, width, height, canvas, index]);
 
     return (
